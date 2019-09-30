@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const crypto = require("crypto");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -29,7 +30,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
+  console.log(req.body, generateRandomString());  // Log the POST request body to the console
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -44,5 +45,5 @@ app.listen(PORT, () => {
 });
 
 function generateRandomString() {
-
+  return crypto.randomBytes(6).toString();
 }
