@@ -12,6 +12,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const generateRandomString = function() {
+  return crypto.randomBytes(3).toString('hex');
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -29,9 +33,11 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  console.log(req.body, generateRandomString());  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+app.post("/urls/", (req, res) => {
+  const shortURL = generateRandomString();
+  console.log(req.body, shortURL);  // Log the POST request body to the console
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(302, `/urls/${shortURL}`);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -43,7 +49,3 @@ app.get("/urls/:shortURL", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-function generateRandomString() {
-  return crypto.randomBytes(6).toString();
-}
