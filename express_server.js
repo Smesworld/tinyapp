@@ -20,11 +20,14 @@ const generateRandomString = function() {
 };
 
 app.get("/", (req, res) => {
-  res.redirect('/login');
+  res.redirect('/urls');
 });
 
 app.post("/login", (req, res) => {
-
+  // const userName = req.body.username;
+  res.cookie("username", req.body.username);
+  console.log(req.body.username);
+  res.redirect('/urls');
 });
 
 app.get("/urls.json", (req, res) => {
