@@ -1,11 +1,14 @@
+const PORT = 8080; // default port 8080
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
-const app = express();
-const PORT = 8080; // default port 8080
+const cookieParser = require('cookie-parser');
 
+const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -17,7 +20,11 @@ const generateRandomString = function() {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect('/login');
+});
+
+app.post("/login", (req, res) => {
+
 });
 
 app.get("/urls.json", (req, res) => {
