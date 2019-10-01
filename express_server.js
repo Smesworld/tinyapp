@@ -32,6 +32,14 @@ const generateRandomString = function() {
   return crypto.randomBytes(3).toString('hex');
 };
 
+const emailLookup = function(email) {
+  const keys = Object.keys(users);
+
+  return keys.find((key) => {
+    return users[key].email === email;
+  });
+};
+
 app.get("/", (req, res) => {
   res.redirect('/urls');
 });
@@ -53,7 +61,19 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
   const userID = generateRandomString();
+
+  if (email === "" || password === "") {
+    console.log("Put something in!");
+    res.status(400);
+    res.send("Invalid email/password");
+  }
+
+  if (emailLookup(email)) {
+    console.log("No dupes");
+  }
   users[userID] = {
     id: userID,
     email: req.body.email,
