@@ -41,14 +41,26 @@ const emailLookup = function(email) {
 };
 
 app.get("/", (req, res) => {
-  res.redirect('/urls');
+  if (req.cookies['user_id']) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
 app.post("/login", (req, res) => {
-  // const userName = req.body.username;
-  res.cookie("username", req.body.username);
-  // console.log(req.body.username);
-  res.redirect('/urls');
+  const userID = emailLookup(req.body.email);
+
+  if (userID && users[userID].password === req.body.password) {
+    res.cookie("user_id", userID);
+    res.redirect('/urls');
+  } else {
+    res.render('login', { status: 400, msg: "Invalid email/password"});
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -66,23 +78,19 @@ app.post("/register", (req, res) => {
   const userID = generateRandomString();
 
   if (email === "" || password === "") {
-    console.log("Put something in!");
-    res.status(400);
-    res.send("Invalid email/password");
-  }
+    res.render('register', { status: 400, msg: "Enter non-empty email/password"});
+  } else if (emailLookup(email)) {
+    res.render('register', { status: 400, msg: "That email is already in use"})
+  } else {
+    users[userID] = {
+      id: userID,
+      email: req.body.email,
+      password: req.body.password
+    };
 
-  if (emailLookup(email)) {
-    console.log("No dupes");
+    res.cookie("user_id", userID);
+    res.redirect('/urls');
   }
-  users[userID] = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password
-  };
-  // console.log(users);
-
-  res.cookie("user_id", userID);
-  res.redirect('/urls');
 });
 
 app.get("/urls.json", (req, res) => {
@@ -90,9 +98,12 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  user = users[req.cookies['user_id']];
-  // console.log(user);
-  res.render("urls_new",  { user });
+  if (req.cookies['user_id']) {
+    user = users[req.cookies['user_id']];
+    res.render("urls_new",  { user });
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get("/urls", (req, res) => {
@@ -101,7 +112,6 @@ app.get("/urls", (req, res) => {
       user: users[req.cookies['user_id']],
       urls: urlDatabase
     };
-    // console.log(templateVars);
     res.render("urls_index", templateVars);
   } else {
     res.redirect('/register');
@@ -110,7 +120,6 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls/", (req, res) => {
   const shortURL = generateRandomString();
-  // console.log(req.body, shortURL);  // Log the POST request body to the console
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
