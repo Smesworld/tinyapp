@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { emailLookup } = require('./helpers');
+const { emailLookup, urlsForUser } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -38,19 +38,6 @@ const urlDatabase = {
 
 const generateRandomString = function() {
   return crypto.randomBytes(3).toString('hex');
-};
-
-const urlsForUser = function(id) {
-  const urls = {};
-  const keys = Object.keys(urlDatabase);
-
-  for (const key in urlDatabase) {
-    if (urlDatabase[key].userID === id) {
-      urls[key] = urlDatabase[key].longURL;
-    }
-  }
-
-  return urls;
 };
 
 app.get("/", (req, res) => {
@@ -120,7 +107,7 @@ app.get("/urls", (req, res) => {
   if (req.session.user_id) {
     let templateVars = {
       user: users[req.session.user_id],
-      urls: urlsForUser(req.session.user_id)
+      urls: urlsForUser(urlDatabase, req.session.user_id)
     };
 
     res.render("urls_index", templateVars);

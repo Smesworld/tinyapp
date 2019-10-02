@@ -6,4 +6,17 @@ const emailLookup = function(database, email) {
   });
 };
 
-module.exports = { emailLookup };
+const urlsForUser = function(database, id) {
+  const urls = {};
+  const keys = Object.keys(database);
+
+  for (const key in database) {
+    if (database[key].userID === id) {
+      urls[key] = database[key].longURL;
+    }
+  }
+
+  return urls;
+};
+
+module.exports = { emailLookup, urlsForUser };
