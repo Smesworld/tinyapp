@@ -42,12 +42,10 @@ const emailLookup = function(email) {
 
 const urlsForUser = function(id) {
   const urls = {};
-  console.log("urls");
+
   for (const key in urlDatabase) {
-    console.log('key:', key);
     if (urlDatabase[key].userID === id) {
       urls[key] = urlDatabase[key].longURL;
-      console.log(urls);
     }
   }
 
@@ -105,10 +103,6 @@ app.post("/register", (req, res) => {
     res.cookie("user_id", userID);
     res.redirect('/urls');
   }
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
 });
 
 app.get("/urls/new", (req, res) => {
