@@ -17,7 +17,8 @@ const testUsers = {
 
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "usrid" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" }
+  "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" },
+  "open99": { longURL: "http://www.hotmail.com", userID: "ausr"}
 };
 
 describe('emailLookup', function() {
