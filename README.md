@@ -2,15 +2,25 @@
 
 ## TODO
 
-e to see how many times my subscribers visit my links
+### User Stories
+As an avid twitter poster,
+I want to be able to shorten links
+so that I can fit more non-link text in my tweets.
+
+As a twitter reader,
+I want to be able to visit sites via shortened links,
+so that I can read interesting content.
+
+(Stretch) As an avid twitter poster,
+I want to be able to see how many times my subscribers visit my links
 so that I can learn what content they like.
 
 ### Display Requirements
 Site Header:
-if a user is logged in, the header shows:
+- if a user is logged in, the header shows:
 the user's email
 a logout button which makes a POST request to /logout
-if a user is not logged in, the header shows:
+- if a user is not logged in, the header shows:
 a link to the login page (/login)
 a link to the registration page (/register)
 
