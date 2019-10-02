@@ -36,7 +36,9 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  if (req.session.user_id) {
+  const loggedInUser = req.session.user_id
+
+  if (loggedInUser) {
     res.redirect('/urls');
   } else {
     res.redirect('/login');
@@ -44,7 +46,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  if (req.session.user_id) {
+  const loggedInUser = req.session.user_id
+
+  if (loggedInUser) {
     res.redirect('/urls');
   } else {
     res.render('login');
@@ -93,8 +97,10 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  if (req.session.user_id) {
-    const user = users[req.session.user_id];
+  const loggedInUser = req.session.user_id;
+
+  if (loggedInUser) {
+    const user = users[loggedInUser];
 
     res.render("urls_new",  { user });
   } else {
@@ -103,10 +109,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  if (req.session.user_id) {
+  const loggedInUser = req.session.user_id
+
+  if (loggedInUser) {
     let templateVars = {
-      user: users[req.session.user_id],
-      urls: urlsForUser(urlDatabase, req.session.user_id)
+      user: users[loggedInUser],
+      urls: urlsForUser(urlDatabase, loggedInUser)
     };
 
     res.render("urls_index", templateVars);
@@ -143,11 +151,15 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
+  const loggedInUser = req.session.user_id;
+  const urlKey = req.params.shortURL
+  const urlOwner = urlDatabase[urlKey].userID;
+
+  if (loggedInUser === urlOwner) {
     let templateVars = {
-      user: users[req.session.user_id],
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL].longURL
+      user: users[loggedInUser],
+      shortURL: urlKey,
+      longURL: urlDatabase[urlKey].longURL
     };
     res.render("urls_show", templateVars);
   } else {
@@ -156,7 +168,8 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const urlKey = req.params.shortURL;
+  const longURL = urlDatabase[urlKey].longURL;
   res.redirect(longURL);
 });
 

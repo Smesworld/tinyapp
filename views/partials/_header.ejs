@@ -5,18 +5,23 @@
         <li class="nav-item active">
           <a class="navbar-brand" href="/urls">TinyApp</a>   
         </li>
+        <% if (typeof user !== 'undefined') { %>
         <li class="nav-item">
           <a class="nav-item nav-link" href="/urls">My URLs</a>  
         </li>
         <li class="nav-item">
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>                  
         </li>
+        <% } %>
       </ul>
     </div>
     <div class="navbar-collapse collapse dual-collapse2">
       <% if (typeof user !== 'undefined') { %>
         <form method="POST" action="/logout" class="form-inline my-2 my-lg-0">
           <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-item nav-link">Logged:</a>  
+            </li>
             <li class="nav-item active">
               <a class="nav-item nav-link"><%= user.email %></a>
             </li>
