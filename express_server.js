@@ -68,7 +68,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userID = emailLookup(req.body.email);
 
-  if (userID && users[userID].password === req.body.password) {
+  if (userID && bcrypt.compareSync(req.body.password, users[userID].password)) {
     res.cookie("user_id", userID);
     res.redirect('/urls');
   } else {
@@ -78,7 +78,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 app.get("/register", (req, res) => {
