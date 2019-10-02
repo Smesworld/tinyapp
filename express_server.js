@@ -4,6 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -97,8 +98,10 @@ app.post("/register", (req, res) => {
     users[userID] = {
       id: userID,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     };
+
+    console.log(users[userID]);
 
     res.cookie("user_id", userID);
     res.redirect('/urls');
