@@ -134,18 +134,29 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls/", (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies.user_id }
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: req.cookies.user_id
+  };
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect(`/urls`);
+  if (req.cookies['user_id'] === urlDatabase[req.params.shortURL].userID) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect(`/urls`);
+  } else {
+    res.render('login');
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
-  res.redirect(`/urls/${req.params.shortURL}`);
+  if (req.cookies['user_id'] === urlDatabase[req.params.shortURL].userID) {
+    urlDatabase[req.params.shortURL] = req.body.longURL;
+    res.redirect(`/urls/${req.params.shortURL}`);
+  } else {
+    res.render('login');
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
