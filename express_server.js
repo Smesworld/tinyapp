@@ -6,6 +6,8 @@ const crypto = require("crypto");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
+const { emailLookup } = require('./helpers');
+
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -38,16 +40,9 @@ const generateRandomString = function() {
   return crypto.randomBytes(3).toString('hex');
 };
 
-const emailLookup = function(email) {
-  const keys = Object.keys(users);
-
-  return keys.find((key) => {
-    return users[key].email === email;
-  });
-};
-
 const urlsForUser = function(id) {
   const urls = {};
+  const keys = Object.keys(urlDatabase);
 
   for (const key in urlDatabase) {
     if (urlDatabase[key].userID === id) {
@@ -71,7 +66,7 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const userID = emailLookup(req.body.email);
+  const userID = emailLookup(users, req.body.email);
 
   if (userID && bcrypt.compareSync(req.body.password, users[userID].password)) {
     req.session.user_id = userID;
@@ -97,7 +92,7 @@ app.post("/register", (req, res) => {
 
   if (email === "" || password === "") {
     res.render('register', { status: 400, msg: "Enter non-empty email/password"});
-  } else if (emailLookup(email)) {
+  } else if (emailLookup(users, email)) {
     res.render('register', { status: 400, msg: "That email is already in use"});
   } else {
     users[userID] = {
@@ -105,6 +100,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 10)
     };
+
     req.session.user_id = userID;
     res.redirect('/urls');
   }
@@ -113,6 +109,7 @@ app.post("/register", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (req.session.user_id) {
     const user = users[req.session.user_id];
+
     res.render("urls_new",  { user });
   } else {
     res.redirect('/login');
@@ -125,6 +122,7 @@ app.get("/urls", (req, res) => {
       user: users[req.session.user_id],
       urls: urlsForUser(req.session.user_id)
     };
+
     res.render("urls_index", templateVars);
   } else {
     res.redirect('/register');
