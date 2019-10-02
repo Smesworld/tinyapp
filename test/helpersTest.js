@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 
-const { emailLookup, urlsForUser } = require('../helpers.js');
+const { generateRandomString, emailLookup, urlsForUser } = require('../helpers.js');
 
 const testUsers = {
   "userRandomID": {
@@ -20,6 +20,21 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" },
   "open99": { longURL: "http://www.hotmail.com", userID: "ausr"}
 };
+
+describe('generateRandomString', function() {
+  it('should return a string of length 6', function() {
+    const randomString = generateRandomString();
+
+    assert.strictEqual(randomString.length, 6);
+  });
+
+  it('should return differnt strings when called', function() {
+    const randomString1 = generateRandomString();
+    const randomString2 = generateRandomString();
+
+    assert.notEqual(randomString1, randomString2);
+  });
+});
 
 describe('emailLookup', function() {
   it('should return a user with valid email', function() {

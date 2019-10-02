@@ -1,3 +1,9 @@
+const crypto = require("crypto");
+
+const generateRandomString = function() {
+  return crypto.randomBytes(3).toString('hex');
+};
+
 const emailLookup = function(database, email) {
   const keys = Object.keys(database);
 
@@ -19,4 +25,4 @@ const urlsForUser = function(database, id) {
   return urls;
 };
 
-module.exports = { emailLookup, urlsForUser };
+module.exports = { generateRandomString, emailLookup, urlsForUser };

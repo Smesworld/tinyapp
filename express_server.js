@@ -2,11 +2,10 @@ const PORT = 8080; // default port 8080
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const crypto = require("crypto");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { emailLookup, urlsForUser } = require('./helpers');
+const { generateRandomString, emailLookup, urlsForUser } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -36,10 +35,6 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" }
 };
 
-const generateRandomString = function() {
-  return crypto.randomBytes(3).toString('hex');
-};
-
 app.get("/", (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -49,7 +44,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.render('login');
+  }
 });
 
 app.post("/login", (req, res) => {
@@ -130,7 +129,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[req.params.shortURL];
     res.redirect(`/urls`);
   } else {
-    res.render('login');
+    res.redirect('/login');
   }
 });
 
@@ -139,7 +138,7 @@ app.post("/urls/:shortURL", (req, res) => {
     urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     res.redirect(`/urls/${req.params.shortURL}`);
   } else {
-    res.render('login');
+    res.redirect('/login');
   }
 });
 
@@ -152,7 +151,7 @@ app.get("/urls/:shortURL", (req, res) => {
     };
     res.render("urls_show", templateVars);
   } else {
-    res.render('login');
+    res.redirect('/login');
   }
 });
 
