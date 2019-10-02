@@ -101,8 +101,6 @@ app.post("/register", (req, res) => {
       password: bcrypt.hashSync(req.body.password, 10)
     };
 
-    console.log(users[userID]);
-
     res.cookie("user_id", userID);
     res.redirect('/urls');
   }
