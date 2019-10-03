@@ -18,23 +18,9 @@ app.use(cookieSession({
 }));
 
 //Databases:
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
-  },
-  "usrid": {
-    id: "usrid",
-    email: "user2@example.com",
-    password: bcrypt.hashSync("the", 10)
-  }
-};
+const users = {};
 
-const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "usrid" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" }
-};
+const urlDatabase = {};
 
 //Root:
 app.get("/", (req, res) => {
