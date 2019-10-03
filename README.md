@@ -44,7 +44,7 @@ a list (or table) of URLs the user has created, each list item containing:
 (Stretch) the date the short URL was created
 (Stretch) the number of times the short URL was visited
 (Stretch) the number number of unique visits for the short URL
-(Minor) a link to "Create a New Short Link" which makes a GET request to /urls/new
+~~(Minor) a link to "Create a New Short Link" which makes a GET request to /urls/new~~
 - ~~if user is not logged in:
 returns HTML with a relevant error message~~
 GET /urls/new

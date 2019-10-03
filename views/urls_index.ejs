@@ -36,6 +36,10 @@
             <td><form method="POST" action="/urls/<%= url %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
           </tr>
         <% } %>
+          <tr>
+            <td>Create a new link:</td>
+            <td><form method="GET" action="/urls/new"><button type="submit" class="btn btn-outline-info">New</button></form></td>
+          </tr>
       </tbody>
     </table>
   </main>
