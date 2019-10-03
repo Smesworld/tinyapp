@@ -47,7 +47,8 @@ app.get("/", (req, res) => {
     res.redirect('/urls');
   } else {
     req.session = null;
-    res.redirect('/login');
+    res.sendStatus(400);
+    // res.redirect('/login');
   }
 });
 
@@ -70,7 +71,7 @@ app.post("/login", (req, res) => {
     req.session.user_id = userID;
     res.redirect('back');
   } else {
-    res.render('login', { status: 403, msg: "Invalid email/password"});
+    res.status(403).render('login', { status: 403, msg: "Invalid email/password"});
   }
 });
 
@@ -135,6 +136,7 @@ app.get("/urls", (req, res) => {
 
     res.render("urls_index", templateVars);
   } else {
+    req.session = null;
     res.status(401).render('login', { status: 401, msg: "You must be logged in to view that"});
   }
 });
