@@ -14,13 +14,28 @@ app.use(cookieSession({
   name: 'session',
   keys: ["sEkrtKye"],
 
-  maxAge: 24 * 60 * 60 * 1000
+  maxAge: 24 * 60 * 60 * 1000,
+  expires: new Date('2020')
 }));
 
 //Databases:
-const users = {};
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
+  },
+  "usrid": {
+    id: "usrid",
+    email: "user2@example.com",
+    password: bcrypt.hashSync("the", 10)
+  }
+};
 
-const urlDatabase = {};
+const urlDatabase = {
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: 0, uniqueVisits: 1 },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "usrid", visits: 2, uniqueVisits: 0 }
+};
 
 //Root:
 app.get("/", (req, res) => {
@@ -172,6 +187,8 @@ app.post("/urls/:shortURL", (req, res) => {
       errorResponse(res, 403, 'error');
     } else {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      urlDatabase[req.params.shortURL].visits = 0;
+      urlDatabase[req.params.shortURL].uniqueVisits = 0;
       res.redirect(`/urls`);
     }
   }
@@ -187,19 +204,22 @@ app.get("/urls/:shortURL", (req, res) => {
 
     if (!loggedInUser) {
       errorResponse(res, 401, 'login');
-    }
-    const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, urlKey, loggedInUser);
-    
-    if (!urlBelongsToUser) {
-      errorResponse(res, 403, 'error');
     } else {
-      let templateVars = {
-        user: users[loggedInUser],
-        shortURL: urlKey,
-        longURL: urlDatabase[urlKey].longURL
-      };
+      const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, urlKey, loggedInUser);
+      
+      if (!urlBelongsToUser) {
+        errorResponse(res, 403, 'error');
+      } else {
+        let templateVars = {
+          user: users[loggedInUser],
+          shortURL: urlKey,
+          longURL: urlDatabase[urlKey].longURL,
+          visits: urlDatabase[urlKey].visits,
+          uniqueVisits: urlDatabase[urlKey].uniqueVisits
+        };
 
-      res.render("urls_show", templateVars);
+        res.render("urls_show", templateVars);
+      }
     }
   }
 });
@@ -209,6 +229,13 @@ app.get("/u/:shortURL", (req, res) => {
 
   if (urlDatabase[urlKey]) {
     const longURL = urlDatabase[urlKey].longURL;
+    urlDatabase[urlKey].visits += 1;
+
+    if (!req.session.visited) {
+      req.session.visited = true;
+      urlDatabase[urlKey].uniqueVisits += 1;
+    }
+
     res.redirect(longURL);
   } else {
     errorResponse(res, 404, 'error');
