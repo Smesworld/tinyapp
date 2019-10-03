@@ -146,7 +146,7 @@ app.post("/urls", (req, res) => {
     const shortURL = generateRandomString();
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
-      userID: req.session.user_id
+      userID: loggedInUser
     };
     res.redirect(`/urls/${shortURL}`);
   } else {
@@ -155,20 +155,38 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
-    delete urlDatabase[req.params.shortURL];
-    res.redirect(`/urls`);
+  const loggedInUser = doesUserExist(users, req.session.user_id);
+
+  if (loggedInUser) {
+    req.session = null;
+    errorResponse(res, 401, 'login');
   } else {
-    res.redirect('/login');
+    const usersUrls = urlsForUser(urlDatabase, loggedInUser);
+
+    if (!Object.keys(usersUrls).includes(urlKey)) {
+      errorResponse(res, 403, 'error');
+    } else {
+      delete urlDatabase[req.params.shortURL];
+      res.redirect(`/urls`);
+    }
   }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
-    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-    res.redirect(`/urls/${req.params.shortURL}`);
+  const loggedInUser = doesUserExist(users, req.session.user_id);
+
+  if (!loggedInUser) {
+    req.session = null;
+    errorResponse(res, 401, 'login');
   } else {
-    res.redirect('/login');
+    const usersUrls = urlsForUser(urlDatabase, loggedInUser);
+
+    if (!Object.keys(usersUrls).includes(urlKey)) {
+      errorResponse(res, 403, 'error');
+    } else {
+      urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      res.redirect(`/urls/${req.params.shortURL}`);
+    }
   }
 });
 

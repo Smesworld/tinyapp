@@ -50,10 +50,7 @@ const urlsForUser = function(database, id) {
   const urls = {};
   const keys = Object.keys(database);
 
-  console.log('urls');
   for (const key in database) {
-    console.log(key);
-    console.log(database[key].userID, id);
     if (database[key].userID === id) {
       urls[key] = database[key].longURL;
     }
