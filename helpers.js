@@ -10,7 +10,6 @@ const generateRandomString = function() {
  * @param {*} response - response callback function
  * @param {*} statusCode - error code thrown
  * @param {*} renderPage - page to render as a result of the error
- * 
  * return: returns the formated callback
  */
 const errorResponse = function(response, statusCode, renderPage) {
@@ -18,24 +17,24 @@ const errorResponse = function(response, statusCode, renderPage) {
 
   //Set Error message based on status code sent
   switch (statusCode) {
-    case 400:
-      errorMessage = "Invalid Email/Password";
-      break;
-    case 401:
-      errorMessage = "You must be logged in to view that";
-      break;
-    case 403:
-      errorMessage = "Access not permitted";
-      break;
-    case 404:
-      errorMessage = "File not found";
-      break;
-    default:
-      errorMessage = "Internal server error"
+  case 400:
+    errorMessage = "Invalid Email/Password";
+    break;
+  case 401:
+    errorMessage = "You must be logged in to view that";
+    break;
+  case 403:
+    errorMessage = "Access not permitted";
+    break;
+  case 404:
+    errorMessage = "File not found";
+    break;
+  default:
+    errorMessage = "Internal server error";
   }
 
   return response.status(statusCode).render(renderPage, {status: statusCode, msg: errorMessage});
-}
+};
 
 /**
  * getUserByEmail - checks if a given email exists in the database and returns the user ID if it does
@@ -81,6 +80,6 @@ const doesUrlBelongToUser = function(urlDatabase, url, userID) {
   const urlBelongsToUser = Object.keys(usersUrls).includes(url);
 
   return urlBelongsToUser;
-}
+};
 
 module.exports = { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser };

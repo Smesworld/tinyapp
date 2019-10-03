@@ -24,7 +24,7 @@ const urlDatabase = {};
 
 //Root:
 app.get("/", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     res.redirect('/urls');
@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     res.redirect('/urls');
@@ -44,7 +44,7 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     res.redirect('/urls');
@@ -57,7 +57,7 @@ app.post("/login", (req, res) => {
       const passwordsMatch = bcrypt.compareSync(req.body.password, users[userIDExists].password);
 
       if (userIDExists && passwordsMatch) {
-        req.session.user_id = userIDExists;
+        req.session.userID = userIDExists;
         res.redirect('back');
       } else {
         errorResponse(res, 403, 'login');
@@ -72,7 +72,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     res.redirect('/urls');
@@ -96,13 +96,13 @@ app.post("/register", (req, res) => {
       password: bcrypt.hashSync(req.body.password, 10)
     };
 
-    req.session.user_id = userID;
+    req.session.userID = userID;
     res.redirect('/urls');
   }
 });
 
 app.get("/urls/new", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     const user = users[loggedInUser];
@@ -114,7 +114,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     let templateVars = {
@@ -129,7 +129,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (loggedInUser) {
     const shortURL = generateRandomString();
@@ -144,7 +144,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (!loggedInUser) {
     errorResponse(res, 401, 'login');
@@ -161,7 +161,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = req.session.userID;
 
   if (!loggedInUser) {
     errorResponse(res, 401, 'login');
@@ -183,7 +183,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!urlDatabase[urlKey]) {
     errorResponse(res, 404, 'error');
   } else {
-    const loggedInUser = req.session.user_id;
+    const loggedInUser = req.session.userID;
 
     if (!loggedInUser) {
       errorResponse(res, 401, 'login');
