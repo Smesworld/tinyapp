@@ -65,11 +65,12 @@ app.post("/login", (req, res) => {
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
-    const userID = getUserByEmail(users, req.body.email);
+    const userIDExists = getUserByEmail(users, req.body.email);
     const inputPassword = req.body.password;
+    const passwordsMatch = bcrypt.compareSync(inputPassword, users[userIDExists].password);
 
-    if (userID && bcrypt.compareSync(inputPassword, users[userID].password)) {
-      req.session.user_id = userID;
+    if (userIDExists && passwordsMatch) {
+      req.session.user_id = userIDExists;
       res.redirect('back');
     } else {
       errorResponse(res, 403, 'login');
@@ -96,11 +97,12 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userID = generateRandomString();
-
+  
   if (email === "" || password === "" || getUserByEmail(users, email)) {
     errorResponse(res, 400, 'register');
   } else {
+    const userID = generateRandomString();
+
     users[userID] = {
       id: userID,
       email: req.body.email,
@@ -113,7 +115,7 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const loggedInUser = req.session.user_id;
+  const loggedInUser = doesUserExist(users, req.session.user_id);
 
   if (loggedInUser) {
     const user = users[loggedInUser];
@@ -152,6 +154,7 @@ app.post("/urls", (req, res) => {
     };
     res.redirect(`/urls/${shortURL}`);
   } else {
+    req.session = null;
     errorResponse(res, 401, 'login');
   }
 });
@@ -165,8 +168,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else {
     const urlKey = req.params.shortURL;
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
+    const urlBelongsToUser = !Object.keys(usersUrls).includes(urlKey);
 
-    if (!Object.keys(usersUrls).includes(urlKey)) {
+    if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
     } else {
       delete urlDatabase[req.params.shortURL];
@@ -184,8 +188,9 @@ app.post("/urls/:shortURL", (req, res) => {
   } else {
     const urlKey = req.params.shortURL;
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
+    const urlBelongsToUser = !Object.keys(usersUrls).includes(urlKey);
 
-    if (!Object.keys(usersUrls).includes(urlKey)) {
+    if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
     } else {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
@@ -207,7 +212,9 @@ app.get("/urls/:shortURL", (req, res) => {
       errorResponse(res, 401, 'login');
     }
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
-    if (!Object.keys(usersUrls).includes(urlKey)) {
+    const urlBelongsToUser = Object.keys(usersUrls).includes(urlKey);
+
+    if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
     } else {
       let templateVars = {
