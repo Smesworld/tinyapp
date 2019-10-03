@@ -69,6 +69,13 @@ const urlsForUser = function(urlDatabase, userID) {
   return urls;
 };
 
+/**
+ * doesUrlBelongToUser - checks if a given url (shortURL) belongs to a given user
+ * @param {*} urlDatabase - url database
+ * @param {*} url - provided url
+ * @param {*} userID - provided user id
+ * return: true or false based on if the user is the owner of a given url
+ */
 const doesUrlBelongToUser = function(urlDatabase, url, userID) {
   const usersUrls = urlsForUser(urlDatabase, userID);
   const urlBelongsToUser = Object.keys(usersUrls).includes(url);
