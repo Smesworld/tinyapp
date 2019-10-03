@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { generateRandomString, emailLookup, urlsForUser } = require('./helpers');
+const { generateRandomString, getUserByEmail, doesUserExist, urlsForUser } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -35,32 +35,40 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" }
 };
 
+// app.use('/error', function(req, res) {
+//   res.status(400);
+//   res.render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
+// });
+
 app.get("/", (req, res) => {
-  const loggedInUser = req.session.user_id
+  const loggedInUser = doesUserExist(users, req.session.user_id);
 
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
+    req.session = null;
     res.redirect('/login');
   }
 });
 
 app.get("/login", (req, res) => {
-  const loggedInUser = req.session.user_id
+  const loggedInUser = doesUserExist(users, req.session.user_id);
 
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
+    req.session = null;
     res.render('login');
   }
 });
 
 app.post("/login", (req, res) => {
-  const userID = emailLookup(users, req.body.email);
+  const userID = getUserByEmail(users, req.body.email);
+  const inputPassword = req.body.password;
 
-  if (userID && bcrypt.compareSync(req.body.password, users[userID].password)) {
+  if (userID && bcrypt.compareSync(inputPassword, users[userID].password)) {
     req.session.user_id = userID;
-    res.redirect('/urls');
+    res.redirect('back');
   } else {
     res.render('login', { status: 403, msg: "Invalid email/password"});
   }
@@ -72,7 +80,14 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  const loggedInUser = doesUserExist(users, req.session.user_id);
+
+  if (loggedInUser) {
+    res.redirect('/urls');
+  } else {
+    req.session = null;
+    res.render('register');
+  }
 });
 
 app.post("/register", (req, res) => {
@@ -81,9 +96,9 @@ app.post("/register", (req, res) => {
   const userID = generateRandomString();
 
   if (email === "" || password === "") {
-    res.render('register', { status: 400, msg: "Enter non-empty email/password"});
-  } else if (emailLookup(users, email)) {
-    res.render('register', { status: 400, msg: "That email is already in use"});
+    res.status(400).render('register', { status: 400, msg: "Enter non-empty email/password"});
+  } else if (getUserByEmail(users, email)) {
+    res.status(400).render('register', { status: 400, msg: "That email is already in use"});
   } else {
     users[userID] = {
       id: userID,
@@ -104,12 +119,13 @@ app.get("/urls/new", (req, res) => {
 
     res.render("urls_new",  { user });
   } else {
+    req.session = null;
     res.redirect('/login');
   }
 });
 
 app.get("/urls", (req, res) => {
-  const loggedInUser = req.session.user_id
+  const loggedInUser = doesUserExist(users, req.session.user_id);
 
   if (loggedInUser) {
     let templateVars = {
@@ -119,11 +135,12 @@ app.get("/urls", (req, res) => {
 
     res.render("urls_index", templateVars);
   } else {
-    res.redirect('/register');
+    res.status(401).render('login', { status: 401, msg: "You must be logged in to view that"});
   }
 });
 
-app.post("/urls/", (req, res) => {
+app.post("/urls", (req, res) => {
+
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
@@ -151,28 +168,49 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const loggedInUser = req.session.user_id;
-  const urlKey = req.params.shortURL
-  const urlOwner = urlDatabase[urlKey].userID;
-
-  if (loggedInUser === urlOwner) {
-    let templateVars = {
-      user: users[loggedInUser],
-      shortURL: urlKey,
-      longURL: urlDatabase[urlKey].longURL
-    };
-    res.render("urls_show", templateVars);
+  const urlKey = req.params.shortURL;
+  
+  if (!urlDatabase[urlKey]) {
+    res.render('error', {status: 404, msg: 'File not found', user: users[req.session.user_id]});
   } else {
-    res.redirect('/login');
+    const loggedInUser = doesUserExist(users, req.session.user_id);
+
+    if (!loggedInUser) {
+      req.session = null;      
+      res.render('login', { status: 401, msg: "Access not authorized"});
+    }
+    const usersUrls = urlsForUser(urlDatabase, loggedInUser);
+    if (!Object.keys(usersUrls).includes(urlKey)) {
+      res.render('error', {status: 403, msg: 'Access not permitted', user: users[req.session.user_id]});
+    } else {
+      let templateVars = {
+        user: users[loggedInUser],
+        shortURL: urlKey,
+        longURL: urlDatabase[urlKey].longURL
+      };
+
+      res.render("urls_show", templateVars);
+    }
   }
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const urlKey = req.params.shortURL;
-  const longURL = urlDatabase[urlKey].longURL;
-  res.redirect(longURL);
+  if (urlDatabase[urlKey]) {
+    const longURL = urlDatabase[urlKey].longURL;
+    res.redirect(longURL);
+  } else {
+    res.render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
+  }
+});
+
+app.use(function(req, res) {
+  res.status(404);
+  res.render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
