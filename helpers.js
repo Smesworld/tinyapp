@@ -1,12 +1,22 @@
 const crypto = require("crypto");
 
+//Generate random string of numbers and letters
 const generateRandomString = function() {
   return crypto.randomBytes(3).toString('hex');
 };
 
+/**
+ * errorResponse - formats response callback depending on the error
+ * @param {*} response - response callback function
+ * @param {*} statusCode - error code thrown
+ * @param {*} renderPage - page to render as a result of the error
+ * 
+ * return: returns the formated callback
+ */
 const errorResponse = function(response, statusCode, renderPage) {
   let errorMessage = "";
 
+  //Set Error message based on status code sent
   switch (statusCode) {
     case 400:
       errorMessage = "Invalid Email/Password";
@@ -27,16 +37,28 @@ const errorResponse = function(response, statusCode, renderPage) {
   return response.status(statusCode).render(renderPage, {status: statusCode, msg: errorMessage});
 }
 
-const getUserByEmail = function(database, email) {
-  const keys = Object.keys(database);
+/**
+ * getUserByEmail - checks if a given email exists in the database and returns the user ID if it does
+ * @param {*} userDatabase - user database
+ * @param {*} email - email provided to look for
+ * return: returns the userID if found otherwise returns undefined
+ */
+const getUserByEmail = function(userDatabase, email) {
+  const keys = Object.keys(userDatabase);
 
   return keys.find((key) => {
-    return database[key].email === email;
+    return userDatabase[key].email === email;
   });
 };
 
-const doesUserExist = function(database, userID) {
-  const keys = Object.keys(database);
+/**
+ * doesUserExist - checks if userID exists in the database
+ * @param {*} userDatabase - user database
+ * @param {*} userID - provided user id to look for
+ * return: returns the userID if it exists or false if it is not in database
+ */
+const doesUserExist = function(userDatabase, userID) {
+  const keys = Object.keys(userDatabase);
 
   if (keys.includes(userID)) {
     return userID;
@@ -45,13 +67,18 @@ const doesUserExist = function(database, userID) {
   return false;
 };
 
-const urlsForUser = function(database, id) {
+/**
+ * urlsForUser - builds an object containing url objects that belong to the given userID
+ * @param {*} urlDatabase - url database
+ * @param {*} userID - provided user id
+ * return: object of url objects owned by userID
+ */
+const urlsForUser = function(urlDatabase, userID) {
   const urls = {};
-  const keys = Object.keys(database);
 
-  for (const key in database) {
-    if (database[key].userID === id) {
-      urls[key] = database[key].longURL;
+  for (const key in urlDatabase) {
+    if (urlDatabase[key].userID === userID) {
+      urls[key] = urlDatabase[key].longURL;
     }
   }
 

@@ -17,6 +17,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }));
 
+//Databases:
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -35,6 +36,7 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" }
 };
 
+//Root:
 app.get("/", (req, res) => {
   const loggedInUser = doesUserExist(users, req.session.user_id);
 
