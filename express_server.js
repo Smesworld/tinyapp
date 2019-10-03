@@ -181,7 +181,7 @@ app.get("/urls/:shortURL", (req, res) => {
     const loggedInUser = doesUserExist(users, req.session.user_id);
 
     if (!loggedInUser) {
-      req.session = null;      
+      req.session = null;
       errorResponse(res, 401, 'login');
     }
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
