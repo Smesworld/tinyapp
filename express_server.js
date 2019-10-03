@@ -157,10 +157,11 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const loggedInUser = doesUserExist(users, req.session.user_id);
 
-  if (loggedInUser) {
+  if (!loggedInUser) {
     req.session = null;
     errorResponse(res, 401, 'login');
   } else {
+    const urlKey = req.params.shortURL;
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
 
     if (!Object.keys(usersUrls).includes(urlKey)) {
@@ -186,7 +187,7 @@ app.post("/urls/:shortURL", (req, res) => {
       errorResponse(res, 403, 'error');
     } else {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-      res.redirect(`/urls/${req.params.shortURL}`);
+      res.redirect(`/urls`);
     }
   }
 });
