@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { generateRandomString, getUserByEmail, doesUserExist, urlsForUser } = require('./helpers');
+const { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -58,14 +58,20 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const userID = getUserByEmail(users, req.body.email);
-  const inputPassword = req.body.password;
+  const loggedInUser = doesUserExist(users, req.session.user_id);
 
-  if (userID && bcrypt.compareSync(inputPassword, users[userID].password)) {
-    req.session.user_id = userID;
-    res.redirect('back');
+  if (loggedInUser) {
+    res.redirect('/urls');
   } else {
-    res.status(403).render('login', { status: 403, msg: "Invalid email/password"});
+    const userID = getUserByEmail(users, req.body.email);
+    const inputPassword = req.body.password;
+
+    if (userID && bcrypt.compareSync(inputPassword, users[userID].password)) {
+      req.session.user_id = userID;
+      res.redirect('back');
+    } else {
+      errorResponse(res, 403, 'login');
+    }
   }
 });
 
@@ -90,10 +96,8 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const userID = generateRandomString();
 
-  if (email === "" || password === "") {
-    res.status(400).render('register', { status: 400, msg: "Enter non-empty email/password"});
-  } else if (getUserByEmail(users, email)) {
-    res.status(400).render('register', { status: 400, msg: "That email is already in use"});
+  if (email === "" || password === "" || getUserByEmail(users, email)) {
+    errorResponse(res, 400, 'register');
   } else {
     users[userID] = {
       id: userID,
@@ -131,18 +135,23 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
   } else {
     req.session = null;
-    res.status(401).render('login', { status: 401, msg: "You must be logged in to view that"});
+    errorResponse(res, 401, 'login');
   }
 });
 
 app.post("/urls", (req, res) => {
+  const loggedInUser = doesUserExist(users, req.session.user_id);
 
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID: req.session.user_id
-  };
-  res.redirect(`/urls/${shortURL}`);
+  if (loggedInUser) {
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: req.session.user_id
+    };
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    errorResponse(res, 401, 'login');
+  }
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -167,17 +176,17 @@ app.get("/urls/:shortURL", (req, res) => {
   const urlKey = req.params.shortURL;
   
   if (!urlDatabase[urlKey]) {
-    res.status(404).render('error', {status: 404, msg: 'File not found', user: users[req.session.user_id]});
+    errorResponse(res, 404, 'error');
   } else {
     const loggedInUser = doesUserExist(users, req.session.user_id);
 
     if (!loggedInUser) {
       req.session = null;      
-      res.status(401).render('login', { status: 401, msg: "Access not authorized"});
+      errorResponse(res, 401, 'login');
     }
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
     if (!Object.keys(usersUrls).includes(urlKey)) {
-      res.status(403).render('error', {status: 403, msg: 'Access not permitted', user: users[req.session.user_id]});
+      errorResponse(res, 403, 'error');
     } else {
       let templateVars = {
         user: users[loggedInUser],
@@ -196,13 +205,12 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[urlKey].longURL;
     res.redirect(longURL);
   } else {
-    res.status(404).render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
+    errorResponse(res, 404, 'error');
   }
 });
 
 app.use(function(req, res) {
-  res.status(404);
-  res.status(404).render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
+  errorResponse(res, 404, 'error');
 });
 
 app.listen(PORT, () => {
