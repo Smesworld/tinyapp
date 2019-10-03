@@ -52,22 +52,6 @@ const getUserByEmail = function(userDatabase, email) {
 };
 
 /**
- * doesUserExist - checks if userID exists in the database
- * @param {*} userDatabase - user database
- * @param {*} userID - provided user id to look for
- * return: returns the userID if it exists or false if it is not in database
- */
-const doesUserExist = function(userDatabase, userID) {
-  const keys = Object.keys(userDatabase);
-
-  if (keys.includes(userID)) {
-    return userID;
-  }
-  
-  return false;
-};
-
-/**
  * urlsForUser - builds an object containing url objects that belong to the given userID
  * @param {*} urlDatabase - url database
  * @param {*} userID - provided user id
@@ -92,4 +76,4 @@ const doesUrlBelongToUser = function(urlDatabase, url, userID) {
   return urlBelongsToUser;
 }
 
-module.exports = { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser, doesUrlBelongToUser };
+module.exports = { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser };

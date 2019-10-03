@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser, doesUrlBelongToUser } = require('./helpers');
+const { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -38,41 +38,44 @@ const urlDatabase = {
 
 //Root:
 app.get("/", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
-    req.session = null;
     res.redirect('/login');
   }
 });
 
 app.get("/login", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
-    req.session = null;
     res.render('login');
   }
 });
 
 app.post("/login", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
     const userIDExists = getUserByEmail(users, req.body.email);
-    const passwordsMatch = bcrypt.compareSync(req.body.password, users[userIDExists].password);
 
-    if (userIDExists && passwordsMatch) {
-      req.session.user_id = userIDExists;
-      res.redirect('back');
+    if (!userIDExists || req.body.password === "") {
+      errorResponse(res, 400, 'login');
     } else {
-      errorResponse(res, 403, 'login');
+      const passwordsMatch = bcrypt.compareSync(req.body.password, users[userIDExists].password);
+
+      if (userIDExists && passwordsMatch) {
+        req.session.user_id = userIDExists;
+        res.redirect('back');
+      } else {
+        errorResponse(res, 403, 'login');
+      }
     }
   }
 });
@@ -83,12 +86,11 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     res.redirect('/urls');
   } else {
-    req.session = null;
     res.render('register');
   }
 });
@@ -114,20 +116,19 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     const user = users[loggedInUser];
 
     res.render("urls_new",  { user });
   } else {
-    req.session = null;
     res.redirect('/login');
   }
 });
 
 app.get("/urls", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     let templateVars = {
@@ -137,13 +138,12 @@ app.get("/urls", (req, res) => {
 
     res.render("urls_index", templateVars);
   } else {
-    req.session = null;
     errorResponse(res, 401, 'login');
   }
 });
 
 app.post("/urls", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (loggedInUser) {
     const shortURL = generateRandomString();
@@ -153,16 +153,14 @@ app.post("/urls", (req, res) => {
     };
     res.redirect(`/urls/${shortURL}`);
   } else {
-    req.session = null;
     errorResponse(res, 401, 'login');
   }
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (!loggedInUser) {
-    req.session = null;
     errorResponse(res, 401, 'login');
   } else {
     const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, req.params.shortURL, loggedInUser);
@@ -177,10 +175,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const loggedInUser = doesUserExist(users, req.session.user_id);
+  const loggedInUser = req.session.user_id;
 
   if (!loggedInUser) {
-    req.session = null;
     errorResponse(res, 401, 'login');
   } else {
     const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, req.params.shortURL, loggedInUser);
@@ -200,10 +197,9 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!urlDatabase[urlKey]) {
     errorResponse(res, 404, 'error');
   } else {
-    const loggedInUser = doesUserExist(users, req.session.user_id);
+    const loggedInUser = req.session.user_id;
 
     if (!loggedInUser) {
-      req.session = null;
       errorResponse(res, 401, 'login');
     }
     const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, urlKey, loggedInUser);
