@@ -85,4 +85,11 @@ const urlsForUser = function(urlDatabase, userID) {
   return urls;
 };
 
-module.exports = { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser };
+const doesUrlBelongToUser = function(urlDatabase, url, userID) {
+  const usersUrls = urlsForUser(urlDatabase, userID);
+  const urlBelongsToUser = Object.keys(usersUrls).includes(url);
+
+  return urlBelongsToUser;
+}
+
+module.exports = { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser, doesUrlBelongToUser };

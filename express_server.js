@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser } = require('./helpers');
+const { generateRandomString, errorResponse, getUserByEmail, doesUserExist, urlsForUser, doesUrlBelongToUser } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
@@ -66,8 +66,7 @@ app.post("/login", (req, res) => {
     res.redirect('/urls');
   } else {
     const userIDExists = getUserByEmail(users, req.body.email);
-    const inputPassword = req.body.password;
-    const passwordsMatch = bcrypt.compareSync(inputPassword, users[userIDExists].password);
+    const passwordsMatch = bcrypt.compareSync(req.body.password, users[userIDExists].password);
 
     if (userIDExists && passwordsMatch) {
       req.session.user_id = userIDExists;
@@ -166,9 +165,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     req.session = null;
     errorResponse(res, 401, 'login');
   } else {
-    const urlKey = req.params.shortURL;
-    const usersUrls = urlsForUser(urlDatabase, loggedInUser);
-    const urlBelongsToUser = !Object.keys(usersUrls).includes(urlKey);
+    const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, req.params.shortURL, loggedInUser);
 
     if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
@@ -186,10 +183,8 @@ app.post("/urls/:shortURL", (req, res) => {
     req.session = null;
     errorResponse(res, 401, 'login');
   } else {
-    const urlKey = req.params.shortURL;
-    const usersUrls = urlsForUser(urlDatabase, loggedInUser);
-    const urlBelongsToUser = !Object.keys(usersUrls).includes(urlKey);
-
+    const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, req.params.shortURL, loggedInUser);
+    
     if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
     } else {
@@ -211,9 +206,8 @@ app.get("/urls/:shortURL", (req, res) => {
       req.session = null;
       errorResponse(res, 401, 'login');
     }
-    const usersUrls = urlsForUser(urlDatabase, loggedInUser);
-    const urlBelongsToUser = Object.keys(usersUrls).includes(urlKey);
-
+    const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, urlKey, loggedInUser);
+    
     if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
     } else {
@@ -230,6 +224,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const urlKey = req.params.shortURL;
+
   if (urlDatabase[urlKey]) {
     const longURL = urlDatabase[urlKey].longURL;
     res.redirect(longURL);
@@ -238,6 +233,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
+//Catch all paths not matches by other routes and render 404 error
 app.use(function(req, res) {
   errorResponse(res, 404, 'error');
 });

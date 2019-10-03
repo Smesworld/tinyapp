@@ -32,13 +32,13 @@
             <td><%= url %></td>
             <td><button id="btn" type="submit" class="btn btn-outline-success" data-clipboard-text="http://localhost:8080/u/<%= url %>">Copy</button></td>
             <td><%= urls[url] %></td>
-            <td><form method="GET" action="/urls/<%= url %>"><button type="submit" class="btn btn-outline-primary">Edit</button></form></td>
+            <td><a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-primary">Edit</button></a></td>
             <td><form method="POST" action="/urls/<%= url %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
           </tr>
         <% } %>
           <tr>
             <td>Create a new link:</td>
-            <td><form method="GET" action="/urls/new"><button type="submit" class="btn btn-outline-info">New</button></form></td>
+            <td><a href="/urls/new"><button type="submit" class="btn btn-outline-info">New</button></a></td>
           </tr>
       </tbody>
     </table>
