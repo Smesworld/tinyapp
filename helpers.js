@@ -39,7 +39,6 @@ const doesUserExist = function(database, userID) {
   const keys = Object.keys(database);
 
   if (keys.includes(userID)) {
-    console.log("dun wana be here");
     return userID;
   }
   

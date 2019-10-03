@@ -179,6 +179,7 @@ app.post("/urls/:shortURL", (req, res) => {
     req.session = null;
     errorResponse(res, 401, 'login');
   } else {
+    const urlKey = req.params.shortURL;
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
 
     if (!Object.keys(usersUrls).includes(urlKey)) {
