@@ -35,11 +35,6 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "usrid" }
 };
 
-// app.use('/error', function(req, res) {
-//   res.status(400);
-//   res.render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
-// });
-
 app.get("/", (req, res) => {
   const loggedInUser = doesUserExist(users, req.session.user_id);
 
@@ -47,8 +42,7 @@ app.get("/", (req, res) => {
     res.redirect('/urls');
   } else {
     req.session = null;
-    res.sendStatus(400);
-    // res.redirect('/login');
+    res.redirect('/login');
   }
 });
 
@@ -173,17 +167,17 @@ app.get("/urls/:shortURL", (req, res) => {
   const urlKey = req.params.shortURL;
   
   if (!urlDatabase[urlKey]) {
-    res.render('error', {status: 404, msg: 'File not found', user: users[req.session.user_id]});
+    res.status(404).render('error', {status: 404, msg: 'File not found', user: users[req.session.user_id]});
   } else {
     const loggedInUser = doesUserExist(users, req.session.user_id);
 
     if (!loggedInUser) {
       req.session = null;      
-      res.render('login', { status: 401, msg: "Access not authorized"});
+      res.status(401).render('login', { status: 401, msg: "Access not authorized"});
     }
     const usersUrls = urlsForUser(urlDatabase, loggedInUser);
     if (!Object.keys(usersUrls).includes(urlKey)) {
-      res.render('error', {status: 403, msg: 'Access not permitted', user: users[req.session.user_id]});
+      res.status(403).render('error', {status: 403, msg: 'Access not permitted', user: users[req.session.user_id]});
     } else {
       let templateVars = {
         user: users[loggedInUser],
@@ -202,13 +196,13 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[urlKey].longURL;
     res.redirect(longURL);
   } else {
-    res.render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
+    res.status(404).render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
   }
 });
 
 app.use(function(req, res) {
   res.status(404);
-  res.render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
+  res.status(404).render('error', {status: 404, msg: 'File Not Found', user: users[req.session.user_id]});
 });
 
 app.listen(PORT, () => {
