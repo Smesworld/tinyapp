@@ -35,7 +35,7 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": { date: new Date(), longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: [], uniqueVisits: 1 },
+  "b2xVn2": { date: new Date(), longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: [], uniqueVisits: 0 },
   "9sm5xK": { date: new Date(), longURL: "http://www.google.com", userID: "usrid", visits: [], uniqueVisits: 0 }
 };
 
@@ -75,6 +75,7 @@ app.post("/login", (req, res) => {
 
       if (userIDExists && passwordsMatch) {
         req.session.userID = userIDExists;
+        req.session.visited = false;
         res.redirect('back');
       } else {
         errorResponse(res, 403, 'login');
@@ -101,11 +102,16 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  let userID;
 
   if (email === "" || password === "" || getUserByEmail(users, email)) {
     errorResponse(res, 400, 'register');
   } else {
-    const userID = generateRandomString();
+    if (req.session.visited) {
+      userID = req.session.visited;
+    } else {
+      userID = generateRandomString();
+    }
 
     users[userID] = {
       id: userID,
@@ -236,9 +242,14 @@ app.get("/u/:shortURL", (req, res) => {
 
   if (urlDatabase[urlKey]) {
     const longURL = urlDatabase[urlKey].longURL;
-    
-    if (!req.session.visited) {
-      req.session.visited = generateRandomString();
+    console.log(req.session.visited);
+
+    if (!req.session.visited ) {
+      if (req.session.userID) {
+      req.session.visited = req.session.userID;
+      } else {
+        req.session.visited = generateRandomString();
+      }
       urlDatabase[urlKey].uniqueVisits += 1;
     }
     console.log(req.session.visited);
