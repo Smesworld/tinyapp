@@ -61,7 +61,10 @@ const urlsForUser = function(urlDatabase, userID) {
 
   for (const key in urlDatabase) {
     if (urlDatabase[key].userID === userID) {
-      urls[key] = urlDatabase[key].longURL;
+      urls[key] = {
+        longURL: urlDatabase[key].longURL,
+        date: urlDatabase[key].date
+      }
     }
   }
 
@@ -81,5 +84,31 @@ const doesUrlBelongToUser = function(urlDatabase, url, userID) {
 
   return urlBelongsToUser;
 };
+/**
+ * formatUrl - takes a url and ensures it begins with http:// or https://
+ * @param {*} url - provided url
+ * return: a properly formatted url
+ */
+const formatUrl = function(url) {
+  const head = 'http';
+  const heads = 'https';
+  const web = 'www';
 
-module.exports = { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser };
+  if (!url.includes(head) && !url.includes(heads)) {
+
+    if (!url.includes(web)) {
+      url = `${head}://${web}.${url}`;
+    } else {
+      url = `${head}://${url}`;
+    }
+  } else {
+    if (!url.includes(web)) {
+      url.replace('//', '//www.');
+    }
+  }
+
+  return url;
+};
+
+
+module.exports = { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser, formatUrl };

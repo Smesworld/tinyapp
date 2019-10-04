@@ -19,6 +19,7 @@
     <table class="table">
       <thead>
         <tr>
+          <th scope="col">Created</th>
           <th scope="col">Short URL</th>
           <th scope="col">Copy</th>
           <th scope="col">Long URL</th>
@@ -29,11 +30,12 @@
       <tbody>
         <% for(let url in urls) { %>
           <tr>
+            <td><%= urls[url].date.getFullYear() %>/<%= urls[url].date.getMonth() + 1 %>/<%= urls[url].date.getDay() %></td>
             <td><%= url %></td>
             <td><button id="btn" type="submit" class="btn btn-outline-success" data-clipboard-text="http://localhost:8080/u/<%= url %>">Copy</button></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].longURL %></td>
             <td><a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-primary">Edit</button></a></td>
-            <td><form method="POST" action="/urls/<%= url %>/delete"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
+            <td><form method="POST" action="/urls/<%= url %>?_method=DELETE"><button type="submit" class="btn btn-outline-danger">Delete</button></form></td>
           </tr>
         <% } %>
           <tr>

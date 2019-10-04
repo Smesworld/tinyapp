@@ -4,12 +4,14 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
 
-const { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser } = require('./helpers');
+const { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUrlBelongToUser, formatUrl } = require('./helpers');
 
 const app = express();
 app.set("view engine", "ejs");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride('_method'))
 app.use(cookieSession({
   name: 'session',
   keys: ["sEkrtKye"],
@@ -33,8 +35,8 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: 0, uniqueVisits: 1 },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "usrid", visits: 2, uniqueVisits: 0 }
+  "b2xVn2": { date: new Date(), longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: 0, uniqueVisits: 1 },
+  "9sm5xK": { date: new Date(), longURL: "http://www.google.com", userID: "usrid", visits: 2, uniqueVisits: 0 }
 };
 
 //Root:
@@ -99,7 +101,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  
+
   if (email === "" || password === "" || getUserByEmail(users, email)) {
     errorResponse(res, 400, 'register');
   } else {
@@ -122,7 +124,7 @@ app.get("/urls/new", (req, res) => {
   if (loggedInUser) {
     const user = users[loggedInUser];
 
-    res.render("urls_new",  { user });
+    res.render("urls_new", { user });
   } else {
     res.redirect('/login');
   }
@@ -149,8 +151,11 @@ app.post("/urls", (req, res) => {
   if (loggedInUser) {
     const shortURL = generateRandomString();
     urlDatabase[shortURL] = {
-      longURL: req.body.longURL,
-      userID: loggedInUser
+      date: new Date(),
+      longURL: formatUrl(req.body.longURL),
+      userID: loggedInUser,
+      visits: 0,
+      uniqueVisits: 0
     };
     res.redirect(`/urls/${shortURL}`);
   } else {
@@ -158,7 +163,7 @@ app.post("/urls", (req, res) => {
   }
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const loggedInUser = req.session.userID;
 
   if (!loggedInUser) {
@@ -175,18 +180,19 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   const loggedInUser = req.session.userID;
 
   if (!loggedInUser) {
     errorResponse(res, 401, 'login');
   } else {
     const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, req.params.shortURL, loggedInUser);
-    
+
     if (!urlBelongsToUser) {
       errorResponse(res, 403, 'error');
     } else {
-      urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      urlDatabase[req.params.shortURL].date = new Date(),
+      urlDatabase[req.params.shortURL].longURL = formatUrl(req.body.longURL);
       urlDatabase[req.params.shortURL].visits = 0;
       urlDatabase[req.params.shortURL].uniqueVisits = 0;
       res.redirect(`/urls`);
@@ -196,7 +202,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const urlKey = req.params.shortURL;
-  
+
   if (!urlDatabase[urlKey]) {
     errorResponse(res, 404, 'error');
   } else {
@@ -206,13 +212,14 @@ app.get("/urls/:shortURL", (req, res) => {
       errorResponse(res, 401, 'login');
     } else {
       const urlBelongsToUser = doesUrlBelongToUser(urlDatabase, urlKey, loggedInUser);
-      
+
       if (!urlBelongsToUser) {
         errorResponse(res, 403, 'error');
       } else {
         let templateVars = {
           user: users[loggedInUser],
           shortURL: urlKey,
+          date: urlDatabase[urlKey].date,
           longURL: urlDatabase[urlKey].longURL,
           visits: urlDatabase[urlKey].visits,
           uniqueVisits: urlDatabase[urlKey].uniqueVisits
@@ -243,7 +250,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 //Catch all paths not matches by other routes and render 404 error
-app.use(function(req, res) {
+app.use(function (req, res) {
   errorResponse(res, 404, 'error');
 });
 

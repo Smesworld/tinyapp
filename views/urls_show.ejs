@@ -17,12 +17,13 @@
     <div class="card-body">
       <h5 class="card-title">TinyURL for: <%= longURL %></h5>
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+      <p class="card-text">Created: <%= date.getFullYear() %>/<%= date.getMonth() + 1 %>/<%= date.getDay() %></p>
       <button class="btn" id="btn" data-clipboard-text="http://localhost:8080/u/<%= shortURL %>">
           Copy to clipboard
       </button>
     </div>
     <div class="card-footer text-muted">
-      <form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
+      <form class="form-inline" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">Enter a new URL:</label>
           <input class="form-control" type="text" name="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em">
