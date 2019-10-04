@@ -64,7 +64,7 @@ const urlsForUser = function(urlDatabase, userID) {
       urls[key] = {
         longURL: urlDatabase[key].longURL,
         date: urlDatabase[key].date
-      }
+      };
     }
   }
 

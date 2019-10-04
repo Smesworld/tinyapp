@@ -11,7 +11,7 @@ const { generateRandomString, errorResponse, getUserByEmail, urlsForUser, doesUr
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(methodOverride('_method'))
+app.use(methodOverride('_method'));
 app.use(cookieSession({
   name: 'session',
   keys: ["sEkrtKye"],
@@ -244,9 +244,9 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[urlKey].longURL;
     console.log(req.session.visited);
 
-    if (!req.session.visited ) {
+    if (!req.session.visited) {
       if (req.session.userID) {
-      req.session.visited = req.session.userID;
+        req.session.visited = req.session.userID;
       } else {
         req.session.visited = generateRandomString();
       }
@@ -262,7 +262,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 //Catch all paths not matches by other routes and render 404 error
-app.use(function (req, res) {
+app.use(function(req, res) {
   errorResponse(res, 404, 'error');
 });
 
