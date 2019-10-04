@@ -35,8 +35,8 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": { date: new Date(), longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: 0, uniqueVisits: 1 },
-  "9sm5xK": { date: new Date(), longURL: "http://www.google.com", userID: "usrid", visits: 2, uniqueVisits: 0 }
+  "b2xVn2": { date: new Date(), longURL: "http://www.lighthouselabs.ca", userID: "usrid", visits: [], uniqueVisits: 1 },
+  "9sm5xK": { date: new Date(), longURL: "http://www.google.com", userID: "usrid", visits: [], uniqueVisits: 0 }
 };
 
 //Root:
@@ -154,7 +154,7 @@ app.post("/urls", (req, res) => {
       date: new Date(),
       longURL: formatUrl(req.body.longURL),
       userID: loggedInUser,
-      visits: 0,
+      visits: [],
       uniqueVisits: 0
     };
     res.redirect(`/urls/${shortURL}`);
@@ -193,7 +193,7 @@ app.put("/urls/:shortURL", (req, res) => {
     } else {
       urlDatabase[req.params.shortURL].date = new Date(),
       urlDatabase[req.params.shortURL].longURL = formatUrl(req.body.longURL);
-      urlDatabase[req.params.shortURL].visits = 0;
+      urlDatabase[req.params.shortURL].visits = [];
       urlDatabase[req.params.shortURL].uniqueVisits = 0;
       res.redirect(`/urls`);
     }
@@ -236,12 +236,13 @@ app.get("/u/:shortURL", (req, res) => {
 
   if (urlDatabase[urlKey]) {
     const longURL = urlDatabase[urlKey].longURL;
-    urlDatabase[urlKey].visits += 1;
-
+    
     if (!req.session.visited) {
-      req.session.visited = true;
+      req.session.visited = generateRandomString();
       urlDatabase[urlKey].uniqueVisits += 1;
     }
+    console.log(req.session.visited);
+    urlDatabase[urlKey].visits.push({ date: new Date(), visitorID: req.session.visited });
 
     res.redirect(longURL);
   } else {

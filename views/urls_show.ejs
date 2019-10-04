@@ -17,7 +17,7 @@
     <div class="card-body">
       <h5 class="card-title">TinyURL for: <%= longURL %></h5>
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-      <p class="card-text">Created: <%= date.getFullYear() %>/<%= date.getMonth() + 1 %>/<%= date.getDay() %></p>
+      <p class="card-text">Created: <%= date.toDateString() %></p>
       <button class="btn" id="btn" data-clipboard-text="http://localhost:8080/u/<%= shortURL %>">
           Copy to clipboard
       </button>
@@ -33,11 +33,30 @@
     </div>
     <div class="text-muted">
       <div class="form-group mb-2">
-        Number of visits: <%= visits %>
+        Number of visits: <%= visits.length %>
       </div>
       <div class="form-group mb-2">
         Number of unique visits: <%= uniqueVisits %>
       </div>
+    </div>
+    <div class="card-footer text-muted">
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Visitor ID</th>
+                <th scope="col">Visit Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for(let visit of visits) { %>
+                <tr>
+                  <td><%= visit.visitorID %></td>
+                  <td><%= visit.date.toString() %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+
     </div>
   </div>
   <!-- Bootstrap JS -->

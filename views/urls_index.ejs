@@ -30,7 +30,7 @@
       <tbody>
         <% for(let url in urls) { %>
           <tr>
-            <td><%= urls[url].date.getFullYear() %>/<%= urls[url].date.getMonth() + 1 %>/<%= urls[url].date.getDay() %></td>
+            <td><%= urls[url].date.toDateString() %></td>
             <td><%= url %></td>
             <td><button id="btn" type="submit" class="btn btn-outline-success" data-clipboard-text="http://localhost:8080/u/<%= url %>">Copy</button></td>
             <td><%= urls[url].longURL %></td>
